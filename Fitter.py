@@ -375,7 +375,7 @@ def get_r2(data_to_fit, params_fitted):
 def streamlit_main():
     st.markdown("# Kinetic fitter")
     st.markdown("## Upload excel file with the experimental data and then the fitting is done")
-    st.markdown(r"- **You can find a template for the excel file [here](https://github.com/hsoria/Aspartic_fitter/tree/main)**")
+    st.markdown(r"- **You can find a template for the excel file [here](https://github.com/hsoria/Aspartic_fitter/blob/main/template.xlsx)**")
     
     st.markdown("## Kinetic rates")
     st.markdown("1. k0: F➝W $min^{-1}$")
