@@ -1,0 +1,9 @@
+streamlit
+pandas
+scipy
+lmfit
+numdifftools
+scikit-learn
+numpy
+matplotlib
+seaborn
