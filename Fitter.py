@@ -185,7 +185,7 @@ def fit_data(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04):
 
 
 
-    return k_values, data_to_fit, simulated_data  
+    return k_values, data_to_fit, simulated_data, tspan
 
 
 
@@ -235,6 +235,7 @@ def plot_fitted(df, y):
 
 
 
+
 def fit_bootstrapping(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04, n_bt = 100):
     
     """
@@ -259,7 +260,7 @@ def fit_bootstrapping(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04
     t = data_to_fit['time']
 
 
-    n_iter = n_bt
+    
     k1_bt = []
     a_bt = []
     k4_bt = []
@@ -294,17 +295,55 @@ def fit_bootstrapping(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04
         k4_bt.append(result.params['k4'].value)
         half_life.append(np.log(2)/(result.params['k4'].value))
 
-        res = pd.DataFrame({"k1":k1_bt,
+        k_values_bt = pd.DataFrame({"k1":k1_bt,
                            "a":a_bt,
                            'k4':k4_bt,
                             "half-life":half_life
                            })
+        k_values_bt["k0"] = k0
         params.update(result.params)
 
+       # Extract parameter values
+        k0 = k0 
+        k1 = float(k_values_bt.k1.median())
+        a = float(k_values_bt.a.median())
+        k4 = float(k_values_bt.k4.median())
 
-    return res
+
+        k_values = pd.DataFrame({"k_values_median": [k0, k1, a, k4]})
+        
+        simulated_data = get_fitted_curve(initial_conditions,
+                                        tspan = tspan, 
+                                        params = k_values.values.flatten()) 
 
 
+    return k_values, data_to_fit, simulated_data, tspan, k_values_bt
+
+def get_k_fitted(statistic, res):
+    
+    
+    """
+    
+    Provides the mean/median value of the distribution of the kinetic constants
+    statistics: mean, median
+    res: result of the fitting
+    
+    """
+    k0 = 1.3600e-04 
+    if statistic == "mean":
+        k1 = float(res.k1.mean())
+        a = float(res.a.mean())
+        k4 = float(res.k4.mean())
+    elif statistic == "median":
+        k1 = float(res.k1.median())
+        a = float(res.a.median())
+        k4 = float(res.k4.median())
+    else:
+        print("I do not understand you")
+
+    params = k0,k1,a,k4
+    
+    return params
 
 def get_rmse(data_to_fit, params_fitted):
     
@@ -370,12 +409,60 @@ def get_r2(data_to_fit, params_fitted):
 
     return r2
 
+def plot_fitted_error_2(df, y,rmse, tsimulation):
+    
+    
+    """
+    Creates a 4 column plots. In each column there is a different reagent. It plots both the original data and
+    the fitted. Error is the 95 Confidence interval of the median. It is showed as filled area.
+    
+    df: data
+    y: fitted
+    y_max: upper limit
+    y_min: low limit
+    
+    
+    """
+    
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3,figsize = (8, 3), 
+                                    sharey = False, sharex = True)
+    sns.scatterplot(data = df, x = 'time', y = 'F', ax = ax1, color = "C0")
+    sns.lineplot(data = y, x = 'min', y = 'F', ax = ax1, alpha = 0.5, color = "C0", estimator = None)
+    ax1.fill_between(tsimulation, y["F"]+(1.96*rmse[0]), y["F"]-(1.96*rmse[0]), alpha = 0.2, color = "C0", lw = 0)
 
+    sns.scatterplot(data = df, x = 'time', y = 'Ac', ax = ax2, color = "C1")
+    sns.lineplot(data = y, x = 'min', y = 'Ac', ax = ax2, alpha = 0.5, color = "C1", estimator = None)
+    ax2.fill_between(tsimulation, y["Ac"]+(1.96*rmse[1]), y["Ac"]-(1.96*rmse[1]), alpha = 0.2, color = "C1", lw = 0)
+
+
+    sns.scatterplot(data = df, x = 'time', y = 'An', ax = ax3, color = "C2")
+    sns.lineplot(data = y, x = 'min', y = 'An', ax = ax3, alpha = 0.5, color = "C2", estimator = None)
+    ax3.fill_between(tsimulation, y["An"]+(1.96*rmse[2]), y["An"]-(1.96*rmse[2]), alpha = 0.2, color = "C2", lw = 0)
+
+
+
+    ax1.set(xlabel = 'Time [min]', ylabel = 'EDC [mM]', xticks = np.linspace(0, tsimulation[-1], 3))
+    ax2.set(xlabel = 'Time [min]', ylabel = 'Acid [mM]')
+    ax3.set(xlabel = 'Time [min]', ylabel = 'Anhydride [mM]')
+
+
+
+    plt.tight_layout(pad = 1.08, w_pad=2)
+
+
+    # Display the plot using Streamlit
+    st.pyplot(fig)
+    
+    return fig, (ax1, ax2, ax3)
 
 def streamlit_main():
     st.markdown("# Kinetic fitter")
     st.markdown("## Upload excel file with the experimental data and then the fitting is done")
-    st.markdown(r"- **You can find a template for the excel file [here](https://github.com/hsoria/Aspartic_fitter/blob/main/template.xlsx)**")
+    st.markdown(r"### **You can find a template for the excel file [here](https://github.com/hsoria)**")
+    st.markdown(r"- You can fit multiple conditions as long as you have them sorted as in the template format")
+    st.markdown(r"- If you only have one conditions, the fitting will only work that condition.")
+    st.markdown(r"- If you want to fit data with different conditions we recommend to do individual fittings")
+
     
     st.markdown("## Kinetic rates")
     st.markdown("1. k0: F➝W $min^{-1}$")
@@ -397,34 +484,67 @@ def streamlit_main():
     if uploaded_file is not None and k0_input:
         # Load data from uploaded Excel file
         df = load_data_frame(uploaded_file, sheet_name="Sheet1")
+        dfs = sort_condition(df)
+
+        df_list = dfs[0]
+        conditions = dfs[1]
 
         # Convert k0_input to float
         k0_value = float(k0_input)
 
-        # Outcome calculation
-        outcome = fit_data(data_to_fit=df, k0=k0_value)
 
-        # Plotting
-        plot_fitted(outcome[1], outcome[2])
-
-        # Table 1: Parameters
-        parameters_table = outcome[0]
+        # Perform fitting for each condition
+        results = []
+        k_values_fit = []
+        r2_results = []
+        for condition_df in df_list:
+            k_values, original_data, simulated_data, tspan = fit_data(condition_df, k0=k0_value)
+            results.append((k_values, original_data, simulated_data, tspan))
+            c = original_data["Condition"].iloc[0]
+            k = k_values
+            k.columns = [f"{c}"]
+            k_values_fit.append(k)
+            # Plotting
         
+            plot_fitted(original_data, simulated_data)
+            r2 = pd.DataFrame(get_r2(data_to_fit=df, 
+                                     params_fitted=k_values.values.flatten()), 
+                              columns=[f"{c}"], 
+                              index=["EDC", "Ac", "An"])
+            
+            r2_results.append(r2)
+
+
+    # Table 1: Parameters
+
+        
+        parameters_table = pd.concat(objs = k_values_fit, axis = 1)
+        
+    
 
         parameters_table.index = ["k0", "k1", "a", "k4"]
         centered_html = f"<div style='width: 100%; text-align: center;'>{parameters_table.to_html(index=True)}</div>"
         
         # Table 2: Fitting results
-        fitting_results = pd.DataFrame(get_r2(data_to_fit=df, params_fitted=outcome[0].values.flatten()), 
-                                       index=["EDC", "Ac", "An"], columns=["R2"])
+        fitting_results = pd.concat(objs = r2_results, axis = 1)
+
         centered_html2 = f"<div style='width: 100%; text-align: center;'>{fitting_results.to_html(index=True)}</div>"
 
         # Display tables side by side
         col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(centered_html, unsafe_allow_html=True)
-        with col2:
-            st.markdown(centered_html2, unsafe_allow_html=True)
 
+        # Table 1: Parameters
+        
+        with col1:
+            st.markdown("## Parameters fitted")
+            st.markdown(centered_html, unsafe_allow_html=True)
+
+        # Table 2: Fitting results
+        
+        with col2:
+            st.markdown(r"## R$^{2}$")
+
+            st.markdown(centered_html2, unsafe_allow_html=True)
+        
 if __name__ == "__main__":
     streamlit_main()
