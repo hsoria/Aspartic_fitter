@@ -128,9 +128,9 @@ def load_initial_conditions(df, k0):
 
     params = Parameters()
     params.add('k0', value=k0, vary = False)
-    params.add('k1', value=k1, min=1e-6, max= 1)
-    params.add('a', value=a, min=1e-6, max= 1)
-    params.add('k4', value=k4, min=1e-6, max= 1)
+    params.add('k1', value=k1, min=1e-6, max= 10)
+    params.add('a', value=a, min=1e-6, max= 10)
+    params.add('k4', value=k4, min=1e-6, max= 10)
     
     return initial_conditions, params, tspan
 
