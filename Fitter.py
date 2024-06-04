@@ -363,21 +363,23 @@ def get_rmse(data_to_fit, params_fitted):
     # Check for NaN values in y_real
     if y_real.isnull().values.any():
         return data_to_fit
-    else:
-    t = data_to_fit['time']
-    y_predict = pd.DataFrame(odeint(kinetic_plotting, 
-                                    y_real.iloc[0].to_list() + [0], 
-                                    t, 
-                                    args=(params_fitted,)), 
-                             columns=['F', 'Ac', 'An', 'W'])
-    
-    rmse_F = np.sqrt(np.mean((y_predict["F"] - y_real["F"])**2, axis=0))
-    rmse_Ac = np.sqrt(np.mean((y_predict["Ac"] - y_real["Ac"])**2, axis=0))
-    rmse_An = np.sqrt(np.mean((y_predict["An"] - y_real["An"])**2, axis=0))
-    
-    rmse = [rmse_F, rmse_Ac, rmse_An]
 
-    return rmse
+    else:
+        
+        t = data_to_fit['time']
+        y_predict = pd.DataFrame(odeint(kinetic_plotting, 
+                                        y_real.iloc[0].to_list() + [0], 
+                                        t, 
+                                        args = (params_fitted,)), 
+                                         columns = ['F', 'Ac', 'An', "W"])
+        
+        rmse_F = np.sqrt(np.mean((y_predict["F"] - y_real["F"])**2, axis=0))
+        rmse_Ac = np.sqrt(np.mean((y_predict["Ac"] - y_real["Ac"])**2, axis=0))
+        rmse_An = np.sqrt(np.mean((y_predict["An"] - y_real["An"])**2, axis=0))
+        
+        rmse = [rmse_F, rmse_Ac, rmse_An]
+    
+        return rmse
 
 
 def get_r2(data_to_fit, params_fitted):
@@ -397,20 +399,24 @@ def get_r2(data_to_fit, params_fitted):
     
 
     y_real = data_to_fit[['F', 'Ac', 'An']]
-    t = data_to_fit['time']
-    y_predict = pd.DataFrame(odeint(kinetic_plotting, 
-                                    y_real.iloc[0].to_list() + [0], 
-                                    t, 
-                                    args = (params_fitted,)), 
-                                    columns = ['F', 'Ac', 'An', "W"])
-    
-    r2_F = round(r2_score(y_real["F"], y_predict["F"]),4)
-    r2_Ac = round(r2_score(y_real["Ac"], y_predict["Ac"]),4)
-    r2_An = round(r2_score(y_real["An"], y_predict["An"]),4)
-    
-    r2 = [r2_F, r2_Ac, r2_An]
+    if y_real.isnull().values.any():
+        return data_to_fit
 
-    return r2
+    else:
+        t = data_to_fit['time']
+        y_predict = pd.DataFrame(odeint(kinetic_plotting, 
+                                        y_real.iloc[0].to_list() + [0], 
+                                        t, 
+                                        args = (params_fitted,)), 
+                                        columns = ['F', 'Ac', 'An', "W"])
+        
+        r2_F = round(r2_score(y_real["F"], y_predict["F"]),4)
+        r2_Ac = round(r2_score(y_real["Ac"], y_predict["Ac"]),4)
+        r2_An = round(r2_score(y_real["An"], y_predict["An"]),4)
+        
+        r2 = [r2_F, r2_Ac, r2_An]
+    
+        return r2
 
 def plot_fitted_error_2(df, y,rmse, tsimulation):
     
