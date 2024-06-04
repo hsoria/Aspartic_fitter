@@ -361,7 +361,7 @@ def get_rmse(data_to_fit, params_fitted):
     
     # Check for NaN values in y_real
     if y_real.isnull().values.any():
-        return data_to_fit
+        return [0, 0, 0]
 
     else:
         
@@ -399,7 +399,8 @@ def get_r2(data_to_fit, params_fitted):
 
     y_real = data_to_fit[['F', 'Ac', 'An']]
     if y_real.isnull().values.any():
-        return data_to_fit
+        
+        return [0, 0, 0]
 
     else:
         t = data_to_fit['time']
