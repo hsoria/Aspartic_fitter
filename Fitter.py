@@ -170,7 +170,7 @@ def fit_data(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04):
 
     data_to_fit = data_to_fit.sort_values(by = "time")
     data = data_to_fit[['F', 'Ac', 'An', 'W']].values
-    t = data_to_fit['time']
+    t = sorted(data_to_fit['time'])
     result = minimize(error, 
                         params, 
                         args=(initial_conditions, t, data), 
