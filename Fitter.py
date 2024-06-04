@@ -347,27 +347,29 @@ def get_k_fitted(statistic, res):
     return params
 
 def get_rmse(data_to_fit, params_fitted):
+    """
+    Calculates the goodness of the fit through RMSE.
     
+    Parameters:
+    data_to_fit: DataFrame containing the original data with columns 'F', 'Ac', 'An', and 'time'.
+    params_fitted: fitted parameters for the ODE model.
+    
+    Returns:
+    List containing RMSE for 'F', 'Ac', and 'An' or None if 'y_real' contains NaN values.
     """
     
-    Calculates the goodness of the fit through the R2. Which is a well-known parameter to decide whether a fit
-    was done properly. Ranges between 0 and 1. Close to 1 equals to good fitting. 
-    
-    initial_conditions 
-    df_real: original data
-    params: fitted parameters
-    
-    returns fitted data
-    
-    """
-
     y_real = data_to_fit[['F', 'Ac', 'An']]
+    
+    # Check for NaN values in y_real
+    if y_real.isnull().values.any():
+        return data_to_fit
+    else:
     t = data_to_fit['time']
     y_predict = pd.DataFrame(odeint(kinetic_plotting, 
                                     y_real.iloc[0].to_list() + [0], 
                                     t, 
-                                    args = (params_fitted,)), 
-                                     columns = ['F', 'Ac', 'An', "W"])
+                                    args=(params_fitted,)), 
+                             columns=['F', 'Ac', 'An', 'W'])
     
     rmse_F = np.sqrt(np.mean((y_predict["F"] - y_real["F"])**2, axis=0))
     rmse_Ac = np.sqrt(np.mean((y_predict["Ac"] - y_real["Ac"])**2, axis=0))
