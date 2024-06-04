@@ -168,8 +168,9 @@ def fit_data(data_to_fit, fit_method = "least_squares", k0 = 1.3600e-04):
 
     initial_conditions, params, tspan = load_initial_conditions(data_to_fit, k0)
 
-    data = sorted(data_to_fit[['F', 'Ac', 'An', 'W']].values)
-    t = sorted(data_to_fit['time'])
+    data = data.sort_values(by = "time")
+    data = data_to_fit[['F', 'Ac', 'An', 'W']].values
+    t = data_to_fit['time']
     result = minimize(error, 
                         params, 
                         args=(initial_conditions, t, data), 
