@@ -128,9 +128,9 @@ def load_initial_conditions(df, k0):
 
     params = Parameters()
     params.add('k0', value=k0, vary = False)
-    params.add('k1', value=k1, min=1e-6, max= 10)
-    params.add('a', value=a, min=1e-6, max= 10)
-    params.add('k4', value=k4, min=1e-6, max= 10)
+    params.add('k1', value=k1, min=1e-9, max= 10)
+    params.add('a', value=a, min=1e-9, max= 10)
+    params.add('k4', value=k4, min=1e-9, max= 10)
     
     return initial_conditions, params, tspan
 
@@ -204,17 +204,17 @@ def plot_fitted(df, y):
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3,figsize = (8, 3), 
                                     sharey = False, sharex = True,
                                       dpi = 300)
-    sns.scatterplot(data = df, x = 'time', y = 'F', ax = ax1, color ="C0")
+    sns.scatterplot(data = df, x = 'time', y = 'F', ax = ax1, color ="C0", edgecolor = "none")
     sns.lineplot(data = y, x = 'min', y = 'F', ax = ax1, alpha = 0.5, color = "C0")
 
-    sns.scatterplot(data = df, x = 'time', y = 'Ac', ax = ax2, color = "C1")
+    sns.scatterplot(data = df, x = 'time', y = 'Ac', ax = ax2, color = "C1", edgecolor = "none")
     sns.lineplot(data = y, x = 'min', y = 'Ac', ax = ax2, alpha = 0.5, color = "C1")
 
-    sns.scatterplot(data = df, x = 'time', y = 'An', ax = ax3, color = "C2")
+    sns.scatterplot(data = df, x = 'time', y = 'An', ax = ax3, color = "C2", edgecolor = "none")
     sns.lineplot(data = y, x = 'min', y = 'An', ax = ax3, alpha = 0.5, color = "C2")
 
 
-
+    sns.despine()
 
     ax1.set(xlabel = 'Time [min]', ylabel = 'EDC [mM]')
     ax2.set(xlabel = 'Time [min]', ylabel = 'Acid [mM]')
