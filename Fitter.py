@@ -214,7 +214,8 @@ def plot_fitted(df, y):
     sns.lineplot(data = y, x = 'min', y = 'An', ax = ax3, alpha = 0.5, color = "C2")
 
 
-    sns.despine()
+    sns.despine(fig, left=False, bottom=False)
+
 
     ax1.set(xlabel = 'Time [min]', ylabel = 'EDC [mM]')
     ax2.set(xlabel = 'Time [min]', ylabel = 'Acid [mM]')
