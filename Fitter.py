@@ -217,7 +217,7 @@ def plot_fitted(df, y):
     sns.despine(fig, left=False, bottom=False)
 
 
-    ax1.set(xlabel = 'Time [min]', ylabel = 'EDC [mM]')
+    ax1.set(xlabel = 'Time [min]', ylabel = 'EDC [mM]', xticks = np.linspace(0, 20, 3))
     ax2.set(xlabel = 'Time [min]', ylabel = 'Acid [mM]')
     ax3.set(xlabel = 'Time [min]', ylabel = 'Anhydride [mM]')
 
